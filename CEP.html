@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>💊 Remedy Chatbot</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* Background with animated gradient */
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(-45deg, #67e8f9, #adf7b6, #fcd34d, #fda4af);
+      background-size: 400% 400%;
+      animation: gradientBG 15s ease infinite;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    @keyframes gradientBG {
+      0% {background-position: 0% 50%;}
+      50% {background-position: 100% 50%;}
+      100% {background-position: 0% 50%;}
+    }
+
+    /* Chat container */
+    .chat-container {
+      width: 420px;
+      height: 600px;
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Header with gradient */
+    .chat-header {
+      background: linear-gradient(135deg, #38bdf8, #34d399);
+      color: white;
+      text-align: center;
+      padding: 15px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    /* Chat body */
+    .chat-body {
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Message layout */
+    .message {
+      display: flex;
+      align-items: flex-end;
+      margin-bottom: 12px;
+    }
+    .avatar {
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      background: #eee;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      margin-right: 8px;
+    }
+    .bubble {
+      max-width: 70%;
+      padding: 10px 15px;
+      border-radius: 18px;
+      font-size: 14px;
+      line-height: 1.4;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+    .bot-message .bubble {
+      background: #f1f0f0;
+      border-bottom-left-radius: 5px;
+    }
+    .user-message {
+      flex-direction: row-reverse;
+    }
+    .user-message .avatar {
+      margin-left: 8px;
+      margin-right: 0;
+    }
+    .user-message .bubble {
+      background: #DCF8C6;
+      border-bottom-right-radius: 5px;
+    }
+
+    /* Remedy card for bot */
+    .remedy-card {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      padding: 10px;
+      margin-top: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      font-size: 13px;
+    }
+    .remedy-card h4 {
+      margin: 0 0 6px;
+      font-size: 14px;
+      color: #34a853;
+    }
+
+    /* Footer */
+    .chat-footer {
+      display: flex;
+      padding: 10px;
+      background: #f9f9f9;
+    }
+    textarea {
+      flex: 1;
+      resize: none;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      padding: 10px;
+      font-size: 14px;
+      height: 40px;
+    }
+    button {
+      background: #34d399;
+      border: none;
+      color: white;
+      padding: 0 20px;
+      margin-left: 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: 0.3s;
+    }
+    button:hover {
+      background: #2fb081;
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <div class="chat-header">💬 Home Remedy Chatbot</div>
+
+    <div class="chat-body" id="chat-body">
+      <!-- Example bot message with remedy card -->
+      <div class="message bot-message">
+        <div class="avatar"><i class="fas fa-robot"></i></div>
+        <div>
+          <div class="bubble">Here’s a natural remedy for sore throat 👇</div>
+          <div class="remedy-card">
+            <h4>🌿 Remedy: Ginger Tea</h4>
+            <p><b>Ingredients:</b> Ginger, Honey, Lemon</p>
+            <p><b>Steps:</b> Boil ginger in water, add honey & lemon. Drink warm.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chat-footer">
+      <form method="post" style="display:flex; width:100%;">
+        <textarea id="msg-input" name="message" placeholder="Type your condition..." required></textarea>
+        <button type="submit">Send</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const chatBody = document.getElementById("chat-body");
+
+    // Auto scroll to latest
+    function scrollToBottom() {
+      chatBody.scrollTo({ top: chatBody.scrollHeight, behavior: "smooth" });
+    }
+
+    // Example: add user + bot messages dynamically
+    function addMessage(sender, text, remedy) {
+      const msgDiv = document.createElement("div");
+      msgDiv.className = "message " + (sender === "bot" ? "bot-message" : "user-message");
+
+      const avatar = document.createElement("div");
+      avatar.className = "avatar";
+      avatar.innerHTML = sender === "bot" ? '<i class="fas fa-robot"></i>' : '<i class="fas fa-user"></i>';
+
+      const bubbleWrapper = document.createElement("div");
+      const bubble = document.createElement("div");
+      bubble.className = "bubble";
+      bubble.innerText = text;
+      bubbleWrapper.appendChild(bubble);
+
+      // If bot provides a remedy card
+      if (sender === "bot" && remedy) {
+        const card = document.createElement("div");
+        card.className = "remedy-card";
+        card.innerHTML = `<h4>🌿 Remedy: ${remedy.title}</h4>
+          <p><b>Ingredients:</b> ${remedy.ingredients}</p>
+          <p><b>Steps:</b> ${remedy.steps}</p>`;
+        bubbleWrapper.appendChild(card);
+      }
+
+      msgDiv.appendChild(avatar);
+      msgDiv.appendChild(bubbleWrapper);
+      chatBody.appendChild(msgDiv);
+      scrollToBottom();
+    }
+
+    // Demo: Add example user message after 1s
+    setTimeout(() => {
+      addMessage("user", "I have a headache 😣");
+    }, 1000);
+
+    setTimeout(() => {
+      addMessage("bot", "Try this natural remedy 👇", {
+        title: "Peppermint Tea",
+        ingredients: "Peppermint leaves, hot water",
+        steps: "Steep peppermint leaves in hot water for 5 minutes and drink."
+      });
+    }, 2000);
+  </script>
+</body>
+</html>
